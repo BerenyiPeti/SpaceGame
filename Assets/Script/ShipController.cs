@@ -120,7 +120,6 @@ public class ShipController : MonoBehaviour
             rollActive = true;
             rollDisplay.color = Color.green;
         }
-
     }
 
     public void resetButtons()

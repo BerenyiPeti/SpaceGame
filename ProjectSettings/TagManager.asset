@@ -10,11 +10,17 @@ TagManager:
   - Yaw
   - Pitch
   - Roll
+  - ControlPanel
+  - MapPanel
+  - TargetAzimuth
+  - TargetLatitude
+  - ShipIcon
+  - TargetDistance
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - PostProcess
   - Water
   - UI
   - 
