@@ -11,7 +11,7 @@ public class MapController : MonoBehaviour
     public float xRange = 850f;
     public float yRange = 360f;
     public float deadZoneRadius = 200f;
-    
+
     public void placeSignal()
     {
         GameObject newButton = Instantiate(buttonPrefab, panel);
@@ -33,6 +33,15 @@ public class MapController : MonoBehaviour
         rt.anchoredPosition = spawnPos;
         rt.localScale = Vector3.one;
 
-        
+
+    }
+    
+    public void deleteSignals()
+    {
+        GameObject[] signals = GameObject.FindGameObjectsWithTag("Signal");
+        foreach (var signal in signals)
+        {
+            Destroy(signal);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,20 +15,18 @@ public class ShipController : MonoBehaviour
     public TMP_Text pitchDisplay;
     public TMP_Text rollDisplay;
     public TMP_Text offsetValue;
-    public TMP_Text azimuthValue;
-    public TMP_Text latitudeValue;
+    public TMP_Text azimuthTmp;
+    public TMP_Text latitudeTmp;
     public GameObject cockpit;
     public float yawSpeed;
     public float pitchSpeed;
     public float rollSpeed;
 
+    private float azimuth;
+    private float latitude;
+
     public float maxValue = 200;
     public float minValue = -200;
-
-    public float startAzimuth; //y
-
-    public float startLatitude; //x
-
     private Quaternion initialRotation;
     public bool yawActive = false;
     public bool pitchActive = false;
@@ -36,6 +35,15 @@ public class ShipController : MonoBehaviour
     public float changingValue;
 
     public GameObject[] axisButtons;
+
+    public float targetAzimuth = 0;
+    public float targetLatitude = 0;
+
+    public bool targetLocked = false;
+
+    public float targetTreshold = 0.5f;
+
+    public bool targetSelected = false;
     void Start()
     {
         initialRotation = cockpit.transform.rotation;
@@ -61,8 +69,34 @@ public class ShipController : MonoBehaviour
         {
             changeValue(ref rollSpeed, rollDisplay);
         }
+
+        checkTargetValues();
+
+
     }
 
+    private void checkTargetValues()
+    {
+        bool azimuthValid = false;
+        bool latitudeValid = false;
+        targetLocked = false;
+
+        if (Math.Abs(targetAzimuth - azimuth) <= targetTreshold)
+        {
+            azimuthValid = true;
+        }
+
+        if (Math.Abs(targetLatitude - latitude) <= targetTreshold)
+        {
+            latitudeValid = true;
+        }
+
+        if (azimuthValid && latitudeValid)
+        {
+            targetLocked = true;
+            Debug.Log("Target Locked");
+        }
+    }
     public void onButtonDown(float value)
     {
         GameObject pressedButton = EventSystem.current.currentSelectedGameObject;
@@ -175,34 +209,24 @@ public class ShipController : MonoBehaviour
 
     public void setStartRotation()
     {
-        /* Vector3 euler = cockpit.transform.rotation.eulerAngles;
-
-        // Azimuth (yaw) = rotation around Y axis
-        startAzimuth = euler.y;
-
-        // Latitude (pitch) = rotation around X axis
-        startLatitude = NormalizeAngle(euler.x);
-
-        // Clamp latitude to -90 to 90
-        startLatitude = Mathf.Clamp(startLatitude, -90f, 90f);
-        azimuthValue.text = startAzimuth.ToString("F1", CultureInfo.InvariantCulture);
-        latitudeValue.text = startLatitude.ToString("F1", CultureInfo.InvariantCulture);
-        offsetValue.text = NormalizeAngle(euler.z).ToString("F1", CultureInfo.InvariantCulture); */
-
         Quaternion relativeRotation = Quaternion.Inverse(initialRotation) * cockpit.transform.rotation;
         Vector3 euler = relativeRotation.eulerAngles;
 
         // Normalize for display
-        float azimuth = euler.y;
-        float latitude = NormalizeAngle(euler.x);
+        azimuth = euler.y;
+        latitude = NormalizeAngle(euler.x);
         float offset = NormalizeAngle(euler.z);
 
         // Clamp pitch if needed
         latitude = Mathf.Clamp(latitude, -90f, 90f);
 
         // Display
-        azimuthValue.text = azimuth.ToString("F1", CultureInfo.InvariantCulture);
-        latitudeValue.text = latitude.ToString("F1", CultureInfo.InvariantCulture);
+        if (targetSelected)
+        {
+            azimuthTmp.text = azimuth.ToString("F1", CultureInfo.InvariantCulture);
+            latitudeTmp.text = latitude.ToString("F1", CultureInfo.InvariantCulture);
+
+        }
         offsetValue.text = offset.ToString("F1", CultureInfo.InvariantCulture);
     }
 
@@ -213,8 +237,19 @@ public class ShipController : MonoBehaviour
         return angle;
     }
 
-    void changeDisplay(TMP_Text value, float speed)
+    public void setTargetAzimuth(float value)
     {
-        value.text = speed.ToString();
+        targetAzimuth = value;
     }
+
+    public void setTargetLatitude(float value)
+    {
+        targetLatitude = value;
+    }
+
+    public void setTargetSelected(bool value)
+    {
+        targetSelected = true;
+    }
+
 }

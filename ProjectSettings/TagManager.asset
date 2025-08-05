@@ -16,6 +16,14 @@ TagManager:
   - TargetLatitude
   - ShipIcon
   - TargetDistance
+  - Signal
+  - ToolPanel
+  - CameraLamp
+  - MicLamp
+  - ScanLamp
+  - Camera
+  - Scanner
+  - Microphone
   layers:
   - Default
   - TransparentFX
