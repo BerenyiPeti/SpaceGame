@@ -22,8 +22,8 @@ public class ShipController : MonoBehaviour
     public float pitchSpeed;
     public float rollSpeed;
 
-    private float azimuth;
-    private float latitude;
+    public float azimuth;
+    public float latitude;
 
     public float maxValue = 200;
     public float minValue = -200;
@@ -36,24 +36,30 @@ public class ShipController : MonoBehaviour
 
     public GameObject[] axisButtons;
 
-    public float targetAzimuth = 0;
-    public float targetLatitude = 0;
+    public float targetAzimuth;
+    public float targetLatitude;
 
     public bool targetLocked = false;
 
     public float targetTreshold = 0.5f;
 
     public bool targetSelected = false;
+
+    private bool azimuthValid = false;
+    private bool latitudeValid = false;
     void Start()
     {
-        initialRotation = cockpit.transform.rotation;
+
     }
 
     void Update()
     {
         cockpit.transform.Rotate(pitchSpeed * Time.deltaTime, yawSpeed * Time.deltaTime, rollSpeed * Time.deltaTime);
 
-        setStartRotation();
+        if (targetSelected)
+        {
+            setStartRotation();
+        }
 
         if (yawActive)
         {
@@ -75,11 +81,41 @@ public class ShipController : MonoBehaviour
 
     }
 
+    public void showCoordinateResults()
+    {
+        if (!targetSelected)
+        {
+            return;
+        }
+
+        if (azimuthValid)
+        {
+            azimuthTmp.color = Color.green;
+        }
+        else
+        {
+            azimuthTmp.color = Color.red;
+        }
+
+        if (latitudeValid)
+        {
+            latitudeTmp.color = Color.green;
+        }
+        else
+        {
+            latitudeTmp.color = Color.red;
+        }
+    }
     private void checkTargetValues()
     {
-        bool azimuthValid = false;
-        bool latitudeValid = false;
+        if (!targetSelected)
+        {
+            return;
+        }
+
         targetLocked = false;
+        azimuthValid = false;
+        latitudeValid = false;
 
         if (Math.Abs(targetAzimuth - azimuth) <= targetTreshold)
         {
@@ -208,6 +244,7 @@ public class ShipController : MonoBehaviour
     }
 
     public void setStartRotation()
+
     {
         Quaternion relativeRotation = Quaternion.Inverse(initialRotation) * cockpit.transform.rotation;
         Vector3 euler = relativeRotation.eulerAngles;
@@ -221,12 +258,9 @@ public class ShipController : MonoBehaviour
         latitude = Mathf.Clamp(latitude, -90f, 90f);
 
         // Display
-        if (targetSelected)
-        {
-            azimuthTmp.text = azimuth.ToString("F1", CultureInfo.InvariantCulture);
-            latitudeTmp.text = latitude.ToString("F1", CultureInfo.InvariantCulture);
 
-        }
+        azimuthTmp.text = azimuth.ToString("F1", CultureInfo.InvariantCulture);
+        latitudeTmp.text = latitude.ToString("F1", CultureInfo.InvariantCulture);
         offsetValue.text = offset.ToString("F1", CultureInfo.InvariantCulture);
     }
 
@@ -250,6 +284,11 @@ public class ShipController : MonoBehaviour
     public void setTargetSelected(bool value)
     {
         targetSelected = true;
+    }
+
+    public void setInitialRotation()
+    {
+        initialRotation = cockpit.transform.rotation;
     }
 
 }

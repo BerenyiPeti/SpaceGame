@@ -24,6 +24,10 @@ TagManager:
   - Camera
   - Scanner
   - Microphone
+  - WDBtn
+  - Time
+  - WDCountdown
+  - LoadingPanel
   layers:
   - Default
   - TransparentFX

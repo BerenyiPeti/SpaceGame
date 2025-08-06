@@ -11,6 +11,7 @@ public class MapController : MonoBehaviour
     public float xRange = 850f;
     public float yRange = 360f;
     public float deadZoneRadius = 200f;
+    
 
     public void placeSignal()
     {

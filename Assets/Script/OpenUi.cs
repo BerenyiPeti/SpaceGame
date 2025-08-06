@@ -11,6 +11,8 @@ public class OpenUi : MonoBehaviour
     private GameObject clickedObject = null;
     private bool UiActive = false;
 
+    public ToolsController tc;
+
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +44,11 @@ public class OpenUi : MonoBehaviour
                 }
 
                 if (hit.collider.CompareTag("ToolPanel"))
+                {
+                    clickedObject = hit.collider.gameObject;
+                }
+
+                if (hit.collider.CompareTag("WDBtn"))
                 {
                     clickedObject = hit.collider.gameObject;
                 }
@@ -80,6 +87,14 @@ public class OpenUi : MonoBehaviour
                     {
                         ToolPanel.SetActive(true);
                         UiActive = true;
+                    }
+                }
+
+                if (hit.collider.gameObject == clickedObject)
+                {
+                    if (hit.collider.CompareTag("WDBtn"))
+                    {
+                        tc.useWarpdrive();
                     }
                 }
 

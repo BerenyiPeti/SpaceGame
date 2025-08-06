@@ -19,14 +19,21 @@ public class ToolsController : MonoBehaviour
 
     public float toolCd = 5f;
 
-    private float camCd = 0f;
-    private float micCd = 0f;
+    /* private float camCd = 0f;
+    private float micCd = 0f; */
     private float scanCd = 0f;
     public MapController mc;
+    public ShipController sc;
+
+    public ScreenUI scui;
 
     public int maxSignals = 3;
 
     public float successfulPingRate = 0.9f;
+
+    private bool signalsLocated = false;
+
+    public bool wdInitiated = false;
     void Start()
     {
 
@@ -38,6 +45,20 @@ public class ToolsController : MonoBehaviour
         if (scanCd > 0)
         {
             cdCount(ref scanCd);
+        }
+
+        if (wdInitiated)
+        {
+            if (!sc.targetLocked)
+            {
+                scui.displayMessage("warp drive canceled:", "target is not locked");
+                scui.CancelLoading();
+                sc.showCoordinateResults();
+                wdInitiated = false;
+                return;
+            }
+
+            Debug.Log("charging warpdrive");
         }
 
     }
@@ -140,31 +161,58 @@ public class ToolsController : MonoBehaviour
         toolTransform.localPosition = endLocalPos; // Ensure final position is exact
     }
 
+    public void useWarpdrive()
+    {
+        sc.showCoordinateResults();
+        if (!sc.targetLocked)
+        {
+            scui.displayMessage("warp drive error:", "target is not locked");
+            return;
+        }
+
+        wdInitiated = true;
+        scui.displayMessage("attention:", "initiating warp drive");
+        scui.displayWarpdrive();
+    }
     public void useScanner()
     {
         if (!scanDeployed || scanDeploying)
         {
             Debug.Log("scanner is not deployed");
+            scui.displayMessage("error:", "scanner is not deployed");
             return;
         }
 
         if (scanCd > 0f)
         {
             Debug.Log("scanner is on cooldown");
+            scui.displayMessage("error:", "scanner is on cooldown");
             return;
         }
 
         scanCd = toolCd;
 
-        if (true)
+        if (signalsLocated)
         {
-            
+            scui.displayMessage("scan complete:", "no new signals found");
+            return;
         }
+
+        float successfulPingValue = Random.value;
+        if (successfulPingValue > successfulPingRate)
+        {
+            scui.displayMessage("error:", "failed to locate signals. Try again");
+            return;
+        }
+
         int signalCount = Random.Range(1, maxSignals + 1);
         for (int i = 0; i < signalCount; i++)
         {
             mc.placeSignal();
+            sc.setInitialRotation();
             Debug.Log("Found " + signalCount + " signal(s)");
+            scui.displayMessage("scan complete:", "Found " + signalCount + " signal(s)");
+            signalsLocated = true;
         }
     }
 

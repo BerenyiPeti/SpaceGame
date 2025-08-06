@@ -23,7 +23,10 @@ public class SelectSignal : MonoBehaviour
 
     private ShipController sc;
 
+
     
+
+
 
     void Start()
     {
@@ -36,6 +39,7 @@ public class SelectSignal : MonoBehaviour
             azimuthTMP = azTemp.GetComponent<TMP_Text>();
             latitudeTMP = latTemp.GetComponent<TMP_Text>();
             distanceTMP = disTemp.GetComponent<TMP_Text>();
+            Debug.Log("Found gameObject");
         }
         else
         {
@@ -48,9 +52,11 @@ public class SelectSignal : MonoBehaviour
 
         scGameObject = GameObject.Find("ShipControls");
         sc = scGameObject.GetComponent<ShipController>();
+
     }
     public void onSignalSelect()
     {
+        
         GameObject[] signals = GameObject.FindGameObjectsWithTag("Signal");
         foreach (var signal in signals)
         {
