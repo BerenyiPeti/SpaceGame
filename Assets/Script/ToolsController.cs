@@ -16,7 +16,7 @@ public class ToolsController : MonoBehaviour
     public float deployDistance = 0.7f;
     public float moveDuration = 2f;
 
-
+    public float wdChargeTime = 10f;
     public float toolCd = 5f;
 
     /* private float camCd = 0f;
@@ -24,7 +24,6 @@ public class ToolsController : MonoBehaviour
     private float scanCd = 0f;
     public MapController mc;
     public ShipController sc;
-
     public ScreenUI scui;
 
     public int maxSignals = 3;
@@ -34,9 +33,20 @@ public class ToolsController : MonoBehaviour
     private bool signalsLocated = false;
 
     public bool wdInitiated = false;
+
+    public bool scanInUse = false;
+
+    public float minScanWait = 2f;
+
+    public float maxScanWait = 5f;
+
+    public bool wdReady = false;
+
+    private Timer wdTimer;
+
     void Start()
     {
-
+        wdTimer = new Timer(this);
     }
 
     // Update is called once per frame
@@ -55,10 +65,10 @@ public class ToolsController : MonoBehaviour
                 scui.CancelLoading();
                 sc.showCoordinateResults();
                 wdInitiated = false;
+                wdReady = false;
+                wdTimer.Stop();
                 return;
             }
-
-            Debug.Log("charging warpdrive");
         }
 
     }
@@ -84,8 +94,16 @@ public class ToolsController : MonoBehaviour
                 break;
             case "scan":
                 if (!scanDeploying)
+                {
+                    if (scanInUse)
+                    {
+                        scui.displayMessage("tool error:", "cannot move tool while in use");
+                        return;
+                    }
                     StartCoroutine(toggleTool(tool));
+                }
                 break;
+
         }
     }
 
@@ -163,6 +181,11 @@ public class ToolsController : MonoBehaviour
 
     public void useWarpdrive()
     {
+        if (wdInitiated)
+        {
+            return;
+        }
+
         sc.showCoordinateResults();
         if (!sc.targetLocked)
         {
@@ -170,9 +193,35 @@ public class ToolsController : MonoBehaviour
             return;
         }
 
+
+        wdTimer.Start(wdChargeTime, startWarpdrive);
+
         wdInitiated = true;
         scui.displayMessage("attention:", "initiating warp drive");
-        scui.displayWarpdrive();
+        scui.displayWarpdrive(wdChargeTime);
+        wdTimer.Start(wdChargeTime, () =>
+        {
+            wdReady = true;
+            scui.warpdriveMessage.text = "warp drive ready";
+        });
+    }
+
+    private void startWarpdrive()
+    {
+
+    }
+
+    public void cancelWarpdrive()
+    {
+        if (!wdInitiated)
+        {
+            scui.displayMessage("error:", "warp drive is not active");
+            return;
+        }
+
+        scui.displayMessage("warp drive canceled:", "warp drive aborted by user");
+        scui.CancelLoading();
+        wdInitiated = false;
     }
     public void useScanner()
     {
@@ -183,6 +232,12 @@ public class ToolsController : MonoBehaviour
             return;
         }
 
+        if (scanInUse)
+        {
+            scui.displayMessage("scanner error:", "scanner already in use, waiting for response");
+            return;
+        }
+
         if (scanCd > 0f)
         {
             Debug.Log("scanner is on cooldown");
@@ -190,18 +245,29 @@ public class ToolsController : MonoBehaviour
             return;
         }
 
+        Timer scanTimer = new Timer(this);
+        float waitTime = Random.Range(minScanWait, maxScanWait + 1);
+        scanTimer.Start(waitTime, scanComplete);
+        scanInUse = true;
+
+    }
+
+    private void scanComplete()
+    {
+        float successfulPingValue = Random.value;
         scanCd = toolCd;
 
         if (signalsLocated)
         {
             scui.displayMessage("scan complete:", "no new signals found");
+            scanInUse = false;
             return;
         }
 
-        float successfulPingValue = Random.value;
         if (successfulPingValue > successfulPingRate)
         {
             scui.displayMessage("error:", "failed to locate signals. Try again");
+            scanInUse = false;
             return;
         }
 
@@ -209,11 +275,13 @@ public class ToolsController : MonoBehaviour
         for (int i = 0; i < signalCount; i++)
         {
             mc.placeSignal();
-            sc.setInitialRotation();
-            Debug.Log("Found " + signalCount + " signal(s)");
-            scui.displayMessage("scan complete:", "Found " + signalCount + " signal(s)");
-            signalsLocated = true;
         }
+
+        sc.setInitialRotation();
+        Debug.Log("Found " + signalCount + " signal(s)");
+        scui.displayMessage("scan complete:", "Found " + signalCount + " signal(s)");
+        signalsLocated = true;
+        scanInUse = false;
     }
 
     public bool getCamState()

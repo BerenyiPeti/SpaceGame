@@ -28,6 +28,7 @@ TagManager:
   - Time
   - WDCountdown
   - LoadingPanel
+  - WDCancel
   layers:
   - Default
   - TransparentFX

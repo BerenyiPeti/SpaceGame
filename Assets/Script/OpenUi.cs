@@ -52,6 +52,11 @@ public class OpenUi : MonoBehaviour
                 {
                     clickedObject = hit.collider.gameObject;
                 }
+
+                if (hit.collider.CompareTag("WDCancel"))
+                {
+                    clickedObject = hit.collider.gameObject;
+                }
             }
         }
 
@@ -95,6 +100,14 @@ public class OpenUi : MonoBehaviour
                     if (hit.collider.CompareTag("WDBtn"))
                     {
                         tc.useWarpdrive();
+                    }
+                }
+
+                if (hit.collider.gameObject == clickedObject)
+                {
+                    if (hit.collider.CompareTag("WDCancel"))
+                    {
+                        tc.cancelWarpdrive();
                     }
                 }
 

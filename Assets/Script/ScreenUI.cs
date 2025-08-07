@@ -24,7 +24,6 @@ public class ScreenUI : MonoBehaviour
     private Image[] panels;
 
     private Coroutine loadingCoroutine;
-    public float fillDelay = 0.55f;
 
     void Start()
     {
@@ -33,6 +32,13 @@ public class ScreenUI : MonoBehaviour
 
     }
 
+
+    // Update is called once per frame
+    void Update()
+    {
+        showTime();
+
+    }
     private void fillPanels()
     {
         Image parentImage = loadingBar.GetComponent<Image>();
@@ -40,12 +46,6 @@ public class ScreenUI : MonoBehaviour
         panels = loadingBar.GetComponentsInChildren<Image>()
             .Where(img => img != parentImage)
             .ToArray();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        showTime();
 
     }
 
@@ -76,15 +76,16 @@ public class ScreenUI : MonoBehaviour
         time.text = dateString;
     }
 
-    public void displayWarpdrive()
+    public void displayWarpdrive(float seconds)
     {
         wdui.SetActive(true);
         warpdriveMessage.text = "warp drive charging";
-        loadingCoroutine = StartCoroutine(FillBar());
+        loadingCoroutine = StartCoroutine(FillBar(seconds));
     }
 
-    IEnumerator FillBar()
+    IEnumerator FillBar(float delay)
     {
+        float fillDelay = delay / (panels.Length - 1);
         foreach (Image panel in panels)
         {
             Color color = panel.color;
@@ -101,9 +102,16 @@ public class ScreenUI : MonoBehaviour
             StopCoroutine(loadingCoroutine);
             loadingCoroutine = null;
         }
+
         resetWarpdriveDisplay();
     }
     public void resetWarpdriveDisplay()
+    {
+        resetLoadingBar();
+        wdui.SetActive(false);
+    }
+
+    private void resetLoadingBar()
     {
         foreach (Image panel in panels)
         {
@@ -111,7 +119,5 @@ public class ScreenUI : MonoBehaviour
             color.a = 0f;
             panel.color = color;
         }
-
-        wdui.SetActive(false);
     }
 }
