@@ -11,8 +11,8 @@ public class Timer
     private float elapsed;
     private float duration;
 
-    public float progress => Mathf.Clamp01(elapsed / duration);
-    public bool isRunning => countdownCoroutine != null;
+    public float Progress => Mathf.Clamp01(elapsed / duration);
+    public bool IsRunning => countdownCoroutine != null;
 
     public Timer(MonoBehaviour runner)
     {
@@ -20,7 +20,7 @@ public class Timer
     }
     public void Start(float seconds, Action action)
     {
-        if (isRunning)
+        if (IsRunning)
         {
             Stop();
         }
