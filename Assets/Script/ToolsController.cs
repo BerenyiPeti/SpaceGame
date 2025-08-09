@@ -5,49 +5,38 @@ using UnityEngine;
 using UnityEngine.UI;
 public class ToolsController : MonoBehaviour
 {
+    private bool signalsLocated = false;
+    private Tool scanner;
+    private WarpDrive warpDrive;
     public float wdChargeTime = 10f;
     public float toolCd = 5f;
     public MapController mc;
     public ShipController sc;
     public ScreenUI scui;
-
     public int maxSignals = 3;
-
     public float successfulScanRate = 0.9f;
-
-    private bool signalsLocated = false;
-
     public bool wdInitiated = false;
-
     public float minScanWait = 2f;
-
     public float maxScanWait = 5f;
-
     public bool wdReady = false;
-
-    private Timer wdTimer;
-
-    private Tool scanner;
-
+    
     void Start()
     {
-        wdTimer = new Timer(this);
         scanner = new Tool(this, "scanner", "Scanner", "ScanLamp", "ScanLamp", 0.7f, 2f, 5f);
+        warpDrive = new WarpDrive(this, 60f);
     }
     void Update()
     {
         scanner.UpdateCooldown();
 
-        if (wdInitiated)
+        if (warpDrive.IsCharging || warpDrive.IsCharged)
         {
             if (!sc.targetLocked)
             {
                 scui.displayMessage("warp drive canceled:", "target is not locked");
                 scui.CancelLoading();
                 sc.showCoordinateResults();
-                wdInitiated = false;
-                wdReady = false;
-                wdTimer.Stop();
+                warpDrive.Cancel();
                 return;
             }
         }
@@ -82,38 +71,43 @@ public class ToolsController : MonoBehaviour
 
     public void useWarpdrive()
     {
-        if (wdInitiated)
+        if (warpDrive.IsCharging)
         {
             return;
         }
 
         sc.showCoordinateResults();
+
         if (!sc.targetLocked)
         {
             scui.displayMessage("warp drive error:", "target is not locked");
             return;
         }
 
-        wdTimer.Start(wdChargeTime, startWarpdrive);
-
-        wdInitiated = true;
-        scui.displayMessage("attention:", "initiating warp drive");
-        scui.displayWarpdrive(wdChargeTime);
-        wdTimer.Start(wdChargeTime, () =>
+        if (warpDrive.IsCharged)
         {
-            wdReady = true;
-            scui.warpdriveMessage.text = "warp drive ready";
-        });
+            warpDrive.Launch(launchWarpdrive);
+            return;
+        }
+
+        InitiateWarpDrive();
+
     }
 
-    private void startWarpdrive()
+    private void InitiateWarpDrive()
     {
-
+        scui.displayMessage("attention:", "initiating warp drive");
+        scui.displayWarpdrive(wdChargeTime);
+        warpDrive.Use(wdChargeTime, () => { scui.warpdriveMessage.text = "warp drive ready"; });
+    }
+    private void launchWarpdrive()
+    {
+        Debug.Log("launching... at least will be launching");
     }
 
     public void cancelWarpdrive()
     {
-        if (!wdInitiated)
+        if (!warpDrive.IsCharging && !warpDrive.IsCharged)
         {
             scui.displayMessage("error:", "warp drive is not active");
             return;
@@ -121,7 +115,7 @@ public class ToolsController : MonoBehaviour
 
         scui.displayMessage("warp drive canceled:", "warp drive aborted by user");
         scui.CancelLoading();
-        wdInitiated = false;
+        warpDrive.Cancel();
     }
     public void useScanner()
     {

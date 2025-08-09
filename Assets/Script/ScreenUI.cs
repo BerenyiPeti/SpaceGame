@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +16,7 @@ public class ScreenUI : MonoBehaviour
 
     public TMP_Text warpdriveMessage;
 
-    public Transform loadingBar;
+    public GameObject loadingBar;
 
     public TMP_Text countdown;
     private Coroutine messageCoroutineInstance;
@@ -81,6 +82,7 @@ public class ScreenUI : MonoBehaviour
         wdui.SetActive(true);
         warpdriveMessage.text = "warp drive charging";
         loadingCoroutine = StartCoroutine(FillBar(seconds));
+        loadingBar.SetActive(true);
     }
 
     IEnumerator FillBar(float delay)
@@ -119,5 +121,13 @@ public class ScreenUI : MonoBehaviour
             color.a = 0f;
             panel.color = color;
         }
+    }
+
+    public void clearScreen()
+    {
+        loadingBar.SetActive(false);
+        MainFeedback.text = "";
+        FeedbackType.text = "";
+        warpdriveMessage.text = "";
     }
 }

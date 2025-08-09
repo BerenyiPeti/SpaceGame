@@ -19,7 +19,7 @@ public class Tool
     private GameObject toolObject;
     private GameObject lampObject;
     private Image lampImage;
-    private Timer usageTimer;
+    public Timer usageTimer;
 
     public bool IsDeployed { get; private set; } = false;
     public bool IsDeploying { get; private set; } = false;
@@ -29,6 +29,14 @@ public class Tool
     public bool IsReady => IsDeployed && !IsDeploying && !IsBusy && Cooldown <= 0;
     public bool IsRetracting => IsDeploying && IsDeployed;
     public float usageProgress => usageTimer.IsRunning ? usageTimer.Progress : 0f;
+
+    public Tool(MonoBehaviour runner, string name, float cooldownTime)
+    {
+        this.runner = runner;
+        usageTimer = new Timer(runner);
+        this.name = name;
+        this.cooldownTime = cooldownTime;
+    }
     public Tool(MonoBehaviour runner, string name, string toolObjectTag, string lampObjectTag, string lampTag, float deployDistance, float deployDuration, float cooldownTime)
     {
         this.runner = runner;
@@ -85,7 +93,7 @@ public class Tool
         lampImage.color = IsDeployed ? Color.green : Color.red;
     }
 
-    public void Use(float useTime, Action action)
+    public virtual void Use(float useTime, Action action)
     {
         if (!IsReady) { return; }
 
@@ -105,7 +113,7 @@ public class Tool
         });
     }
 
-    public void Cancel()
+    public virtual void Cancel()
     {
         if (!usageTimer.IsRunning) { Debug.Log("tool not in use"); return; }
 
